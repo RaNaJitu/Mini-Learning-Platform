@@ -51,7 +51,10 @@ This is a **production-ready microservices-based learning platform** that demons
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   http URL
+    - git clone https://github.com/RaNaJitu/Mini-Learning-Platform.git
+   SSH URL
+    - git@github.com:RaNaJitu/Mini-Learning-Platform.git
    cd Mini_Learning_Platform
    ```
 
@@ -73,7 +76,9 @@ This is a **production-ready microservices-based learning platform** that demons
 
 4. **Access the application**
    - **API Gateway**: http://localhost:3000
-   - **API Documentation**: http://localhost:3000/docs
+   - **API Documentation**: http://localhost:3001/swagger/docs/static/index.html#/
+   - **API Documentation**: http://localhost:3002/swagger/docs/static/index.html#/
+   - **API Documentation**: http://localhost:3003/swagger/docs/static/index.html#/
    - **Prisma Studio (User)**: http://localhost:5555
    - **Prisma Studio (Lesson)**: http://localhost:5556
    - **Prisma Studio (Achievement)**: http://localhost:5557
