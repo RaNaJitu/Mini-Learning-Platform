@@ -1,0 +1,14 @@
+services:
+  user-svc:
+    environment:
+      PRISMA_CLIENT_ENGINE_TYPE: wasm
+      PRISMA_CLI_QUERY_ENGINE_TYPE: wasm
+  lesson-svc:
+    environment:
+      PRISMA_CLIENT_ENGINE_TYPE: wasm
+      PRISMA_CLI_QUERY_ENGINE_TYPE: wasm
+  achievement-svc:
+    environment:
+      PRISMA_CLIENT_ENGINE_TYPE: wasm
+      PRISMA_CLI_QUERY_ENGINE_TYPE: wasm
+      SILVER_THRESHOLD: "2"

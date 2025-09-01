@@ -1,0 +1,130 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: learning
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d learning"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  nats:
+    image: nats:2.10-alpine
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+
+  gateway:
+    build: ./gateway
+    environment:
+      PORT: 3000
+      USER_SVC_URL: "http://user:3001"
+      LESSON_SVC_URL: "http://lesson:3002"
+      ACH_SVC_URL: "http://achievement:3003"
+      RATE_LIMIT_MAX: "120"
+      RATE_LIMIT_TIME_WINDOW: "1 minute"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - user
+      - lesson
+      - achievement
+
+  user:
+    build: ./user
+    environment:
+      PORT: 3001
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/learning?schema=users
+      JWT_SECRET: "devsecret"
+      RATE_LIMIT_MAX: 50
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  lesson:
+    build: ./lesson
+    environment:
+      PORT: 3002
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/learning?schema=lessons
+      JWT_SECRET: "devsecret"
+      NATS_URL: nats://nats:4222
+      RATE_LIMIT_MAX: 50
+    ports:
+      - "3002:3002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      nats:
+        condition: service_started
+
+  achievement:
+    build: ./achievement
+    environment:
+      PORT: 3003
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/learning?schema=achievements
+      JWT_SECRET: "devsecret"
+      NATS_URL: nats://nats:4222
+      SILVER_THRESHOLD: "3"
+      RATE_LIMIT_MAX: 50
+    ports:
+      - "3003:3003"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      nats:
+        condition: service_started
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "8080:80"
+    depends_on:
+      - postgres
+
+  adminer:
+    image: adminer
+    ports:
+      - "8081:8080"
+    depends_on:
+      - postgres
+
+  prisma-studio-user:
+    build: ./user
+    command: npx prisma studio --port 5555
+    ports:
+      - "5555:5555"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/learning?schema=users
+    depends_on:
+      - postgres
+
+  prisma-studio-lesson:
+    build: ./lesson
+    command: npx prisma studio --port 5556
+    ports:
+      - "5556:5556"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/learning?schema=lessons
+    depends_on:
+      - postgres
+
+  prisma-studio-achievement:
+    build: ./achievement
+    command: npx prisma studio --port 5557
+    ports:
+      - "5557:5557"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/learning?schema=achievements
+    depends_on:
+      - postgres

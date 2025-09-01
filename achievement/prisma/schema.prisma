@@ -1,0 +1,136 @@
+// This is your Prisma schema file for the Achievement service
+
+generator client {
+  provider = "prisma-client-js"
+  // output   = "./generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+
+
+// enum Subject {
+//   MATH
+//   SCIENCE
+//   ENGLISH
+//   HISTORY
+// }
+
+// enum Role {
+//   ADMIN
+//   STUDENT
+// }
+
+// model User {
+//   id           Int   @id @default(autoincrement())
+//   email        String   @unique
+//   password     String
+//   role         Role     @default(STUDENT)
+//   createdAt    DateTime @default(now())
+// }
+
+// model Lesson {
+//   id          Int       @id @default(autoincrement())
+//   title       String
+//   subject     Subject
+//   grade       Int
+//   createdAt   DateTime     @default(now())
+  
+//   enrollments Enrollment[]
+//   completions Completion[]
+
+//   @@index([subject, grade])
+// }
+
+// model Enrollment {
+//   id         Int   @id @default(autoincrement())
+//   lessonId   Int
+//   userId     Int
+//   enrolledAt DateTime @default(now())
+
+//   lesson     Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+//   @@unique([userId, lessonId])
+// }
+
+// model Completion {
+//   id          Int   @id @default(autoincrement())
+//   userId      Int
+//   lessonId    Int
+//   subject     Subject
+//   completedAt DateTime @default(now())
+
+//   lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+//   @@unique([userId, lessonId])
+//   @@index([subject])
+// }
+
+
+enum AchievementType {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+}
+
+enum AchievementCategory {
+  LESSON_COMPLETION
+  STREAK
+  SUBJECT_MASTERY
+  TIME_BASED
+  SPECIAL
+}
+
+model Achievement {
+  id          String             @id @default(uuid()) @db.Uuid
+  name        String
+  description String
+  type        AchievementType
+  category    AchievementCategory
+  points      Int                @default(0)
+  threshold   Int?               // For threshold-based achievements
+  icon        String?            // Icon URL or identifier
+  isActive    Boolean            @default(true)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  userAchievements UserAchievement[]
+
+  @@index([type, category])
+  @@index([isActive])
+}
+
+model UserAchievement {
+  id            String      @id @default(uuid()) @db.Uuid
+  userId        String      // Reference to user from user service
+  achievementId String      @db.Uuid
+  earnedAt      DateTime    @default(now())
+  points        Int         @default(0) // Points earned for this achievement
+  metadata      Json?       // Additional data about how it was earned
+
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@index([userId])
+  @@index([earnedAt])
+}
+
+model UserStats {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @unique // Reference to user from user service
+  totalPoints     Int      @default(0)
+  totalAchievements Int    @default(0)
+  bronzeCount     Int      @default(0)
+  silverCount     Int      @default(0)
+  goldCount       Int      @default(0)
+  platinumCount   Int      @default(0)
+  lastUpdated     DateTime @default(now()) @updatedAt
+
+  @@index([totalPoints])
+  @@index([totalAchievements])
+}

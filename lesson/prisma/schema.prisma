@@ -1,0 +1,71 @@
+// This is your Prisma schema file for the WhiteLabel service
+
+generator client {
+  provider = "prisma-client-js"
+  // output   = "./generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+
+enum Subject {
+  MATH
+  SCIENCE
+  ENGLISH
+  HISTORY
+}
+
+// enum Role {
+//   ADMIN
+//   STUDENT
+// }
+
+// model User {
+//   id           Int   @id @default(autoincrement())
+//   email        String   @unique
+//   password     String
+//   role         Role     @default(STUDENT)
+//   createdAt    DateTime @default(now())
+// }
+
+model Lesson {
+  id          Int       @id @default(autoincrement())
+  title       String
+  subject     Subject
+  grade       Int
+  createdAt   DateTime     @default(now())
+  
+  enrollments Enrollment[]
+  completions Completion[]
+
+  @@index([subject, grade])
+}
+
+model Enrollment {
+  id         Int   @id @default(autoincrement())
+  lessonId   Int
+  userId     Int
+  enrolledAt DateTime @default(now())
+
+  lesson     Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+}
+
+model Completion {
+  id          Int   @id @default(autoincrement())
+  userId      Int
+  lessonId    Int
+  subject     Subject
+  completedAt DateTime @default(now())
+
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+  @@index([subject])
+}
+
