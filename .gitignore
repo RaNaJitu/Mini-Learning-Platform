@@ -282,15 +282,15 @@ coverage/
 .local/
 local/
 
-# Microservices specific
-services/*/dist/
-services/*/build/
-services/*/node_modules/
-services/*/.env
-services/*/.env.local
-services/*/.env.development.local
-services/*/.env.test.local
-services/*/.env.production.local
+# Microservices specific - handle all service directories
+*/dist/
+*/build/
+*/node_modules/
+*/.env
+*/.env.local
+*/.env.development.local
+*/.env.test.local
+*/.env.production.local
 
 # Shared package
 shared/dist/
