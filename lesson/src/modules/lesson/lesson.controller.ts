@@ -12,10 +12,8 @@ import {
     GetLesson,
     UpdateLesson,
 } from "./lesson.services";
-import { connect, StringCodec } from "nats";
 
-const NATS_URL = process.env.NATS_URL || "nats://nats:4222";
-const sc = StringCodec();
+
 
 //#region GET LESSON
 export const GET_LESSON = async (
@@ -259,7 +257,7 @@ export const COMPLETE_LESSON = async (
             Number(lesson.id),
             lesson.subject
         );
-        // await app.nats.publish("lesson.completed", app.natsJson.encode(completion));
+        // Event is automatically published by the CompleteLesson service function
         reply
             .status(200)
             .send(
