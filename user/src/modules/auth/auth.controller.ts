@@ -57,7 +57,7 @@ export const LOGIN = async (
             throw new Error("Invalid Email");
         }
         
-      if (await verifyPassword(password,user.password)) {
+      if (!(await verifyPassword(password,user.password))) {
          throw new ForbiddenException(
         fmt.formatError({
           message: "Invalid Password!",

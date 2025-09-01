@@ -40,8 +40,13 @@ async function main() {
   try {
     await app.listen({ port: Number(PORT), host: HOST });
     console.log(`Server ready at http://${HOST}:${PORT}/healthz`);
+    
+    // Start event subscriber in the background
+    import('./events/startEventSubscriber.js').then(({ startEventSubscriber }) => {
+      startEventSubscriber().catch(console.error);
+    });
   } catch (e: any) {
-    console.error(`Error starting User server: ${e.stack || e}`);
+    console.error(`Error starting Achievement server: ${e.stack || e}`);
   }
 
   // try {

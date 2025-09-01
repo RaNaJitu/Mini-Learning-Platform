@@ -6,6 +6,6 @@ return {hash}
 }
 
 export async function verifyPassword(candidatePassword:string, hash:any){
-const candidateHash  =  await argon2.verify(hash, candidatePassword)
-return candidateHash === hash
+const isValid  =  await argon2.verify(hash, candidatePassword)
+return isValid
 }

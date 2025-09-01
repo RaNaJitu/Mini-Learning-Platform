@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2019",
+    "module": "commonjs",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "typeRoots": ["./types", "./node_modules/@types"]
+  },
+  "include": [
+    "user/src/**/*.ts",
+    "lesson/src/**/*.ts",
+    "achievement/src/**/*.ts",
+    "__mocks__/**/*.js",
+    "types/**/*.d.ts"
+  ]
+}
+
+

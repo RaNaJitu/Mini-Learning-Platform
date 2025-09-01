@@ -1,20 +1,85 @@
 //#region Lesson Schema
+// const getLessonResponse = {
+//   200: {
+//     description: "Successful response",
+//     type: "object",
+//     properties: {
+//       data: {
+//         type: "object",
+//         properties: {
+//           lessons: {
+//             type: "array",
+//             items: {
+//               type: "object",
+//               properties: {
+//                 id: { type: "integer" },
+//                 title: { type: "string" },
+//                 subject: { type: "string" },
+//                 grade: { type: "integer" },
+//                 createdAt: { type: "string" },
+//                 updatedAt: { type: "string" },
+
+//               },
+//             },
+//           },
+//           pagination: {
+//             type: "object",
+//             properties: {
+//               page: { type: "integer" },
+//               limit: { type: "integer" },
+//               totalCount: { type: "integer" },
+//               totalPages: { type: "integer" },
+//             },
+//           },
+//         },
+//       },
+//       message: { type: "string" },
+//       success: { type: "boolean" },
+//       code: { type: "string" },
+//     },
+//   }
+// }
+
 const getLessonResponse = {
   200: {
     description: "Successful response",
     type: "object",
+    additionalProperties: false,
+    required: ["data", "message", "success", "code"],
     properties: {
       data: {
-        type: "array",
-        items: {
-          type: "object",
-          properties: {
-            id: { type: "integer" },
-            title: { type: "string" },
-            subject: { type: "string" },
-            grade: { type: "integer" },
-            createdAt: { type: "string" },
-            updatedAt: { type: "string" },
+        type: "object",
+        additionalProperties: false,
+        required: ["lessons", "pagination"],
+        properties: {
+          lessons: {
+            type: "array",
+            items: {
+              type: "object",
+              additionalProperties: false,
+              required: ["id", "title", "subject", "grade", "createdAt"],
+              properties: {
+                id: { type: "integer" },
+                title: { type: "string", minLength: 1 },
+                // If you have a fixed set of subjects, lock it down with enum:
+                // subject: { type: "string", enum: ["MATH","ENGLISH","SCIENCE","HISTORY"] },
+                subject: { type: "string" },
+                grade: { type: "integer", minimum: 1, maximum: 12 },
+                createdAt: { type: "string", format: "date-time" },
+                updatedAt: { type: "string", format: "date-time" } // optional (not in required)
+              },
+            },
+          },
+          pagination: {
+            type: "object",
+            additionalProperties: false,
+            required: ["page", "limit", "totalCount", "totalPages"],
+            properties: {
+              page: { type: "integer", minimum: 1 },
+              limit: { type: "integer", minimum: 1 },
+              totalCount: { type: "integer", minimum: 0 },
+              totalPages: { type: "integer", minimum: 0 },
+            },
           },
         },
       },
@@ -22,8 +87,8 @@ const getLessonResponse = {
       success: { type: "boolean" },
       code: { type: "string" },
     },
-  }
-}
+  },
+};
 
 export const getLessonSchema = {
   description: "Get lesson details",

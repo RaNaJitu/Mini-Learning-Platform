@@ -17,7 +17,11 @@ COPY tsconfig.json ./
 COPY src ./src
 RUN npm run build
 
+# Copy startup script
+COPY start.sh ./start.sh
+RUN chmod +x ./start.sh
+
 ENV NODE_ENV=production
-# run migrations or push, then optional seed, then start
-CMD ["sh","-c","(npx prisma migrate deploy || npx prisma db push) && (npx prisma db seed || true) && npm start"]
+# Use the startup script
+CMD ["./start.sh"]
 ENV PRISMA_CLIENT_ENGINE_TYPE=wasm

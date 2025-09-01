@@ -2,6 +2,7 @@ import { Role } from "@prisma/client";
 import prisma from "../../utils/prisma";
 import argon2 from "argon2";
 import { hashPassword } from "../../utils/hash";
+import { User } from "../../domain/User";
 
 
 export async function findUserByEmail(email: string) {
@@ -20,6 +21,12 @@ export const RegisterUser = async (body: any) => {
     role
   } = body;
   
+  // Create domain model for validation
+  const userDomain = User.create({ 
+    email, 
+    password, 
+    role: (role as Role) || "STUDENT" 
+  });
   
   const  { hash }  = await hashPassword(password);
   const created_user = await prisma.user.create({

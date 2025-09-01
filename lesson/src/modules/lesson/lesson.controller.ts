@@ -19,15 +19,45 @@ const sc = StringCodec();
 
 //#region GET LESSON
 export const GET_LESSON = async (
-    request: FastifyRequest,
+    request: FastifyRequest<{
+        Querystring: {
+            subject?: string;
+            grade?: string;
+            minGrade?: string;
+            maxGrade?: string;
+            search?: string;
+            sortBy?: string;
+            sortDirection?: 'asc' | 'desc';
+            page?: string;
+            limit?: string;
+        };
+    }>,
     reply: FastifyReply
 ) => {
     try {
         let auth_user: any = getDataFromRequestContext(request, "data");
         console.log("==LOG== ~ GET_LESSON ~ auth_user:", auth_user);
 
-        // Note: User validation removed as user model is not available in lesson service
-        const lessonData = await GetLesson();
+        // Build query options from request parameters
+        const queryOptions = {
+            filters: {
+                subject: request.query.subject as any,
+                grade: request.query.grade ? parseInt(request.query.grade) : undefined,
+                minGrade: request.query.minGrade ? parseInt(request.query.minGrade) : undefined,
+                maxGrade: request.query.maxGrade ? parseInt(request.query.maxGrade) : undefined,
+                search: request.query.search,
+            },
+            sort: {
+                field: (request.query.sortBy as any) || 'createdAt',
+                direction: request.query.sortDirection || 'desc',
+            },
+            pagination: {
+                page: request.query.page ? parseInt(request.query.page) : 1,
+                limit: request.query.limit ? parseInt(request.query.limit) : 10,
+            },
+        };
+
+        const lessonData = await GetLesson(queryOptions);
         console.log("==LOG== ~ GET_LESSON ~ lessonData:", lessonData);
         reply
             .status(200)

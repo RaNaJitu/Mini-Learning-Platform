@@ -1,5 +1,9 @@
 import prisma from "../../utils/prisma";
 import { Subject } from "@prisma/client";
+import { Lesson } from "../../domain/Lesson";
+import { LessonQueryBuilder, LessonQueryOptions } from "./lesson.query";
+import { NatsEventPublisher } from "../../events/NatsEventPublisher";
+import { UserEnrolledEvent, LessonCompletedEvent } from "../../events/DomainEvent";
 
 // Note: User model is not available in lesson service schema
 // This function should be removed or handled differently
@@ -7,15 +11,44 @@ import { Subject } from "@prisma/client";
 export const CreateLesson = async (body: any) => {
     let { title, subject, grade } = body;
 
+    // Create domain model for validation
+    const lesson = Lesson.create({ title, subject, grade });
+
     const created = await prisma.lesson.create({
-        data: { title, subject, grade },
+        data: lesson.toPersistence(),
     });
 
     return created;
 };
 
-export const GetLesson = async () => {
-    return await prisma.lesson.findMany({});
+export const GetLesson = async (queryOptions?: LessonQueryOptions) => {
+    const queryBuilder = new LessonQueryBuilder(queryOptions);
+    
+    const where = queryBuilder.buildWhereClause();
+    const orderBy = queryBuilder.buildOrderBy();
+    const { skip, take } = queryBuilder.buildPagination();
+
+    const [lessons, totalCount] = await Promise.all([
+        prisma.lesson.findMany({
+            where,
+            orderBy,
+            skip,
+            take,
+        }),
+        prisma.lesson.count({ where }),
+    ]);
+
+    const totalPages = queryBuilder.getTotalPages(totalCount);
+
+    return {
+        lessons,
+        pagination: {
+            page: queryOptions?.pagination?.page || 1,
+            limit: queryOptions?.pagination?.limit || 10,
+            totalCount,
+            totalPages,
+        },
+    };
 };
 
 export const UpdateLesson = async (id: number, body: any) => {
@@ -42,6 +75,15 @@ export const EnrollLesson = async (userId: number, lessonId: number) => {
         create: { userId, lessonId },
     });
 
+    // Emit domain event
+    const eventPublisher = new NatsEventPublisher();
+    await eventPublisher.connect(process.env.NATS_URL || "nats://nats:4222");
+    
+    const event = new UserEnrolledEvent(userId.toString(), lessonId);
+    await eventPublisher.publish(event);
+    
+    await eventPublisher.disconnect();
+
     return enrollment;
 };
 
@@ -50,11 +92,20 @@ export const CompleteLesson = async (
     lessonId: number,
     subject: Subject
 ) => {
-    const enrollment = await prisma.completion.create({
+    const completion = await prisma.completion.create({
         data: { userId, lessonId, subject },
     });
 
-    return enrollment;
+    // Emit domain event
+    const eventPublisher = new NatsEventPublisher();
+    await eventPublisher.connect(process.env.NATS_URL || "nats://nats:4222");
+    
+    const event = new LessonCompletedEvent(userId.toString(), lessonId, subject);
+    await eventPublisher.publish(event);
+    
+    await eventPublisher.disconnect();
+
+    return completion;
 };
 
 export const FindLesson = async (lessonId: number) => {

@@ -17,4 +17,7 @@ export interface IRouteOptions<T extends RouteGenericInterface> extends RouteSho
 		RawReplyDefaultExpression,
 		T
 	>;
+	preHandler?: any[];
+	schema?: any;
+	validatorCompiler?: any;
 }

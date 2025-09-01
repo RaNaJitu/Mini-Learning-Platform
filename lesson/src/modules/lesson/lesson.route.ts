@@ -22,7 +22,7 @@ const UserRoutes: IRouteOptions<{
         url: "/",
         handler: GET_LESSON,
         preHandler: [preUserHandler],
-        schema: getLessonSchema,
+        // schema: getLessonSchema,
         method: API_METHODS.GET,
     },
     {
